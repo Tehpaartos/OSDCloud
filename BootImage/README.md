@@ -2,7 +2,7 @@
 
 Scripts for building the WinRE boot image, generating the ISO, and creating bootable USB drives.
 
-> Run these scripts on a **Windows 10** build machine. Windows 11 WinRE is not compatible with older hardware.
+> Run these scripts on a **Windows 10 22H2** build machine. Windows 11 WinRE is not compatible with older hardware.
 > If your build machine runs Windows 11, use a Hyper-V VM with Windows 10 22H2.
 
 ## Scripts

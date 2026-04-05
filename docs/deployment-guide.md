@@ -7,7 +7,7 @@ This guide walks the **repo owner** through the full setup process from a fresh 
 ## Prerequisites
 
 Before starting:
-- A **Windows 10 build machine** (physical or Hyper-V VM with Windows 10 22H2)
+- A **Windows 10 22H2 build machine** (physical or Hyper-V VM)
 - Internet access
 - An Azure subscription (for ISO hosting)
 - Access to your DNS registrar
@@ -18,7 +18,7 @@ See [prerequisites.md](prerequisites.md) for the full list.
 
 ## Step 1 - Prepare the Build Machine
 
-Run on the Windows 10 build machine as Administrator in PowerShell 7:
+Run on the Windows 10 22H2 build machine as Administrator in PowerShell 7:
 
 ```powershell
 # Clone the repo

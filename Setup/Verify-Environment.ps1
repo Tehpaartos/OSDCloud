@@ -104,6 +104,27 @@ if ($adkOk) {
 }
 Add-Result 'Windows PE Add-on' $winPEOk $winPEDetail
 
+# 8b. ADK version matches OS (mismatch causes 0x800f081e CAB errors during template build)
+if ($adkOk) {
+    $osVersion = (Get-CimInstance Win32_OperatingSystem).Version  # e.g. 10.0.19045.x for Win10 22H2
+    $adkVersionKey = 'HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows Kits\Installed Roots'
+    $adkVersion = (Get-ItemProperty $adkVersionKey -ErrorAction SilentlyContinue).KitsRoot10
+    # Extract build number from OS (third segment) and ADK path (contains 10.x.NNNNN)
+    $osBuild = ($osVersion -split '\.')[2]
+    $adkKitVersion = (Get-ItemProperty $adkVersionKey -ErrorAction SilentlyContinue).PSObject.Properties |
+        Where-Object { $_.Name -like '*Version*' } | Select-Object -First 1 -ExpandProperty Value
+    if ($adkKitVersion) {
+        $adkBuild = ($adkKitVersion -split '\.')[2]
+        $versionMatch = $osBuild -eq $adkBuild
+        Add-Result 'ADK Version Match' $versionMatch $(
+            if ($versionMatch) { "OS build $osBuild matches ADK build $adkBuild" }
+            else { "OS build $osBuild vs ADK build $adkBuild - mismatch causes WinPE CAB errors. Reinstall ADK matching OS version." }
+        )
+    } else {
+        Add-Result 'ADK Version Match' $false 'Could not determine ADK build version'
+    }
+}
+
 # 9. OSD module
 $osd = Get-Module -ListAvailable OSD -ErrorAction SilentlyContinue | Sort-Object Version -Descending | Select-Object -First 1
 Add-Result 'OSD Module' ($null -ne $osd) $(if ($osd) { "v$($osd.Version)" } else { 'Not installed - run Install-Prerequisites.ps1' })

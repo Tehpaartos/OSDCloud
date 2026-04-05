@@ -11,7 +11,7 @@
     be rebuilt when deployment config changes. To change what gets deployed, edit
     Deployment/Deploy-Windows11.ps1 and push to main.
 
-    IMPORTANT: This script must be run on a Windows 10 build machine.
+    IMPORTANT: This script must be run on a Windows 10 22H2 build machine.
     Windows 11 WinRE is not compatible with older hardware.
     If your build machine runs Windows 11, use a Hyper-V VM with Windows 10 22H2.
 
@@ -36,7 +36,7 @@
 .NOTES
     Author: OSDCloud Project
     Repo:   https://github.com/Tehpaartos/OSDCloud
-    Requires: OSDCloud module, Windows ADK, Windows 10 build machine
+    Requires: OSDCloud module, Windows ADK for Windows 10 22H2, Windows 10 22H2 build machine
     Deploy URL: https://raw.githubusercontent.com/Tehpaartos/OSDCloud/main/Deployment/Deploy-Windows11.ps1
 #>
 
@@ -99,11 +99,11 @@ if ($osCaption -match 'Windows 11') {
     Write-Host ''
     Write-Status '!! WARNING: Build machine is running Windows 11 !!' -Status 'WARN'
     Write-Status 'Windows 11 WinRE is NOT compatible with older hardware.' -Status 'WARN'
-    Write-Status 'For maximum hardware compatibility, build on Windows 10 22H2.' -Status 'WARN'
+    Write-Status 'Build on Windows 10 22H2 for maximum hardware compatibility.' -Status 'WARN'
     Write-Host ''
     $continue = Read-Host 'Continue anyway? Only do this if targeting Windows 11+ hardware exclusively. [Y/N]'
     if ($continue -notmatch '^[Yy]') {
-        Write-Status 'Aborted. Please use a Windows 10 build machine or Hyper-V VM.' -Status 'WARN'
+        Write-Status 'Aborted. Please use a Windows 10 22H2 build machine or Hyper-V VM.' -Status 'WARN'
         exit 0
     }
     Write-Log 'User acknowledged Windows 11 build machine warning'

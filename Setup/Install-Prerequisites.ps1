@@ -10,7 +10,7 @@
       Phase 1 - Scans the system and reports what is installed vs missing.
       Phase 2 - Installs any missing components in the correct order.
 
-    Run on a Windows 10 build machine. Windows 11 WinRE is not compatible with older hardware.
+    Run on a Windows 10 22H2 build machine. Windows 11 WinRE is not compatible with older hardware.
     If your build machine runs Windows 11, use a Hyper-V VM running Windows 10 22H2.
 
 .EXAMPLE
@@ -19,7 +19,7 @@
 .NOTES
     Author: OSDCloud Project
     Repo:   https://github.com/Tehpaartos/OSDCloud
-    Requires: Windows 10 build machine, internet access
+    Requires: Windows 10 22H2 build machine, internet access
 #>
 
 [CmdletBinding()]
@@ -115,6 +115,23 @@ if ($adkOk) {
     $winPEOk = Test-Path $winPERoot
 }
 $scan += [PSCustomObject]@{ Component = 'Windows PE Add-on'; Status = if ($winPEOk) { 'OK' } else { 'MISSING' }; Detail = if ($winPEOk) { 'Installed' } else { 'Not installed - required for OSDCloud template build' } }
+
+# ADK version match
+$adkVersionMatch = $false
+$adkVersionDetail = 'Could not check'
+if ($adkOk) {
+    $osVersion = (Get-CimInstance Win32_OperatingSystem).Version
+    $osBuild = ($osVersion -split '\.')[2]
+    $adkVersionKey = 'HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows Kits\Installed Roots'
+    $adkKitVersion = (Get-ItemProperty $adkVersionKey -ErrorAction SilentlyContinue).PSObject.Properties |
+        Where-Object { $_.Name -like '*Version*' } | Select-Object -First 1 -ExpandProperty Value
+    if ($adkKitVersion) {
+        $adkBuild = ($adkKitVersion -split '\.')[2]
+        $adkVersionMatch = $osBuild -eq $adkBuild
+        $adkVersionDetail = if ($adkVersionMatch) { "OS build $osBuild matches ADK build $adkBuild" } else { "OS build $osBuild vs ADK build $adkBuild - MISMATCH" }
+    }
+}
+$scan += [PSCustomObject]@{ Component = 'ADK Version Match'; Status = if ($adkVersionMatch) { 'OK' } else { 'MISSING' }; Detail = $adkVersionDetail }
 
 # OSD module
 $osdOk = Test-ModuleInstalled -Name 'OSD'
@@ -262,6 +279,21 @@ if (-not $adkOk) {
     Write-Log 'ADK not installed - prompted user to install manually'
 }
 
+# 7a. ADK version mismatch
+if ($adkOk -and -not $adkVersionMatch) {
+    Write-Status 'ADK version does not match the OS build.' -Status 'WARN'
+    Write-Host ''
+    Write-Host '  This causes 0x800f081e errors when OSDCloud tries to inject WinPE language CABs.' -ForegroundColor Yellow
+    Write-Host '  The ADK version must match the Windows build on this machine.' -ForegroundColor White
+    Write-Host ''
+    Write-Host '  1. Uninstall the current ADK and WinPE add-on from Apps & Features' -ForegroundColor White
+    Write-Host '  2. Download the ADK matching your OS from:' -ForegroundColor White
+    Write-Host '     https://learn.microsoft.com/en-us/windows-hardware/get-started/adk-install' -ForegroundColor Cyan
+    Write-Host '  3. Re-run this script after reinstalling.' -ForegroundColor White
+    Write-Host ''
+    Write-Log 'ADK version mismatch detected - prompted user'
+}
+
 # 7b. Windows PE Add-on
 if ($adkOk -and -not $winPEOk) {
     Write-Status 'Windows PE Add-on is not installed.' -Status 'WARN'
@@ -275,6 +307,7 @@ if ($adkOk -and -not $winPEOk) {
     Write-Status 'Please install the Windows PE Add-on manually, then re-run this script.' -Status 'WARN'
     Write-Log 'WinPE add-on not installed - prompted user to install manually'
 }
+
 
 # 8. OSD module
 if (-not $osdOk) {

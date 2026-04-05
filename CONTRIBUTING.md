@@ -32,7 +32,7 @@ Do not merge untested changes to `main`.
 
 ## Building and Testing a New ISO Locally
 
-1. Run `Setup/Install-Prerequisites.ps1` on a **Windows 10** build machine
+1. Run `Setup/Install-Prerequisites.ps1` on a **Windows 10 22H2** build machine
 2. Edit `Deployment/Deploy-Windows11.ps1` with your changes and push to a test branch
 3. Temporarily re-stamp your USB with your branch URL to test before merging to `main`
 4. Once tested, merge to `main` and run `BootImage/New-OSDCloudISO.ps1` only if the boot image itself changed

@@ -13,7 +13,7 @@ Scripts for the **repo owner** to prepare the build machine before creating the 
 
 ## Usage
 
-Run on a **Windows 10** build machine as Administrator in PowerShell 7:
+Run on a **Windows 10 22H2** build machine as Administrator in PowerShell 7:
 
 ```powershell
 # Step 1 - Install everything needed
@@ -25,5 +25,5 @@ Run on a **Windows 10** build machine as Administrator in PowerShell 7:
 
 See [docs/prerequisites.md](../docs/prerequisites.md) for the full list of requirements.
 
-> **Build machine must run Windows 10.** Windows 11 WinRE is not compatible with older hardware.
+> **Build machine must run Windows 10 22H2.** Windows 11 WinRE is not compatible with older hardware.
 > If your build machine runs Windows 11, use a Hyper-V VM with Windows 10 22H2 for the build step.

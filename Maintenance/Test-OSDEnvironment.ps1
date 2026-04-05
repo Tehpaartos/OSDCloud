@@ -62,9 +62,11 @@ function Add-Check {
 }
 
 # 1. Build machine OS
-$osCaption = (Get-WmiObject Win32_OperatingSystem -ErrorAction SilentlyContinue).Caption
-$osOk = $osCaption -notmatch 'Windows 11'
-Add-Check 'Build Machine OS' (if ($osOk) { 'PASS' } else { 'WARN' }) "$osCaption$(if (-not $osOk) { ' - Windows 10 recommended for WinRE compatibility' })"
+$osCaption = (Get-CimInstance Win32_OperatingSystem).Caption
+$osIs22H2 = $osCaption -match 'Windows 10' -and (Get-CimInstance Win32_OperatingSystem).Version -match '^10\.0\.19045'
+$osResult = if ($osIs22H2) { 'PASS' } elseif ($osCaption -match 'Windows 10') { 'WARN' } else { 'WARN' }
+$osDetail = if ($osIs22H2) { $osCaption } else { "$osCaption - Windows 10 22H2 required for WinRE compatibility" }
+Add-Check 'Build Machine OS' $osResult $osDetail
 
 # 2. Administrator
 $isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
