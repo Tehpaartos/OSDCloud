@@ -75,9 +75,10 @@ $tlsReg32 = (Get-ItemProperty 'HKLM:\SOFTWARE\WOW6432Node\Microsoft\.NETFramewor
 $tlsOk = $tlsReg64 -and $tlsReg32
 Add-Result 'TLS 1.2 Persisted' $tlsOk $(if ($tlsOk) { 'Registry keys set (SchUseStrongCrypto=1)' } else { 'Not persisted - run Install-Prerequisites.ps1' })
 
-# 5. NuGet provider
+# 5. NuGet provider (minimum 2.8.5.201 required by PowerShellGet)
 $nuget = Get-PackageProvider -Name NuGet -ErrorAction SilentlyContinue
-Add-Result 'NuGet Package Provider' ($null -ne $nuget) $(if ($nuget) { $nuget.Version.ToString() } else { 'Not installed' })
+$nugetOk = $null -ne $nuget -and $nuget.Version -ge [Version]'2.8.5.201'
+Add-Result 'NuGet Package Provider' $nugetOk $(if ($nugetOk) { $nuget.Version.ToString() } elseif ($nuget) { "v$($nuget.Version) - too old, minimum 2.8.5.201 required" } else { 'Not installed - run Install-Prerequisites.ps1' })
 
 # 6. PSGallery trusted
 $gallery = Get-PSRepository -Name PSGallery -ErrorAction SilentlyContinue
