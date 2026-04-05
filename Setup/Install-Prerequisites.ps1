@@ -280,7 +280,8 @@ if ($adkOk -and -not $winPEOk) {
 if (-not $osdOk) {
     Write-Status 'Installing OSD module...' -Status 'INFO'
     try {
-        Install-Module OSD -Force -Scope AllUsers
+        # Install to the shared Windows PowerShell path so both PS5.1 and PS7 can find it
+        Install-Module OSD -Force -Scope AllUsers -Path 'C:\Program Files\WindowsPowerShell\Modules'
         Write-Log 'OSD module installed'
         Write-Status 'OSD module installed.' -Status 'OK'
     } catch {
@@ -294,7 +295,8 @@ if (-not $osdOk) {
 if (-not $osdCloudOk) {
     Write-Status 'Installing OSDCloud module...' -Status 'INFO'
     try {
-        Install-Module OSDCloud -Force -Scope AllUsers
+        # Install to the shared Windows PowerShell path so both PS5.1 and PS7 can find it
+        Install-Module OSDCloud -Force -Scope AllUsers -Path 'C:\Program Files\WindowsPowerShell\Modules'
         Write-Log 'OSDCloud module installed'
         Write-Status 'OSDCloud module installed.' -Status 'OK'
     } catch {

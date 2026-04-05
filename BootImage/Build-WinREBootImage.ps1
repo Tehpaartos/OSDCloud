@@ -184,6 +184,12 @@ if (-not (Test-Path $ps5)) {
 }
 
 $dismScript = @"
+# Add PS7 module path so PS5.1 can find modules installed via pwsh
+`$ps7ModulePath = 'C:\Program Files\PowerShell\Modules'
+if ((Test-Path `$ps7ModulePath) -and (`$env:PSModulePath -notlike "*`$ps7ModulePath*")) {
+    `$env:PSModulePath = `$ps7ModulePath + ';' + `$env:PSModulePath
+}
+
 Import-Module OSDCloud -Force -ErrorAction Stop
 
 # Step 1 - Create OSDCloud Template (WinRE)
