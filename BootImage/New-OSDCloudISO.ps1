@@ -141,6 +141,10 @@ $isoStandard = $null
 $isoNoPrompt = $null
 
 foreach ($iso in $generatedISOs) {
+    if (-not (Test-Path $iso.FullName)) {
+        Write-Log "SKIP: $($iso.FullName) no longer exists (already moved)"
+        continue
+    }
     if ($iso.Name -like '*NoPrompt*') {
         $dest = Join-Path $OutputPath "OSDCloud-v${version}-NoPrompt.iso"
         Move-Item -Path $iso.FullName -Destination $dest -Force
