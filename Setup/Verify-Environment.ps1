@@ -85,15 +85,21 @@ $galleryTrusted = $gallery -and $gallery.InstallationPolicy -eq 'Trusted'
 Add-Result 'PSGallery Trusted' $galleryTrusted $(if ($galleryTrusted) { 'Trusted' } else { 'Not trusted' })
 
 # 7. Windows ADK
-$adkPath = 'HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows Kits\Installed Roots'
-$adkOk = Test-Path $adkPath
-if ($adkOk) {
-    $adkRoot = (Get-ItemProperty $adkPath -ErrorAction SilentlyContinue).KitsRoot10
-    $adkOk = $null -ne $adkRoot -and (Test-Path $adkRoot)
-    $adkDetail = if ($adkOk) { $adkRoot } else { 'Installed but root path missing' }
-} else {
-    $adkDetail = 'Not installed - see docs/prerequisites.md'
+$adkRegPath = 'HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows Kits\Installed Roots'
+$adkRoot = $null
+if (Test-Path $adkRegPath) {
+    $adkRoot = (Get-ItemProperty $adkRegPath -ErrorAction SilentlyContinue).KitsRoot10
+    if ($adkRoot) { $adkRoot = $adkRoot.TrimEnd('\') }
 }
+# Fallback to known default locations if registry path missing or invalid
+if (-not $adkRoot -or -not (Test-Path $adkRoot)) {
+    $adkRoot = @(
+        "${env:ProgramFiles(x86)}\Windows Kits\10",
+        "$env:ProgramFiles\Windows Kits\10"
+    ) | Where-Object { Test-Path $_ } | Select-Object -First 1
+}
+$adkOk = $null -ne $adkRoot -and (Test-Path $adkRoot)
+$adkDetail = if ($adkOk) { $adkRoot } else { 'Not installed - see docs/prerequisites.md' }
 Add-Result 'Windows ADK' $adkOk $adkDetail
 
 # 8. Windows PE Add-on
@@ -111,8 +117,11 @@ if ($adkOk) {
     $osVersion = (Get-CimInstance Win32_OperatingSystem).Version  # e.g. 10.0.19045.x for Win10 22H2
     $osBuild = ($osVersion -split '\.')[2]
     # Read ADK version from a known binary - registry has no version property
-    $adkBinary = Join-Path $adkRoot 'Assessment and Deployment Kit\Deployment Tools\amd64\Dism\dism.exe'
-    if (Test-Path $adkBinary) {
+    $adkBinary = @(
+        (Join-Path $adkRoot 'Assessment and Deployment Kit\Deployment Tools\amd64\Dism\dism.exe'),
+        (Join-Path $adkRoot 'Assessment and Deployment Kit\Deployment Tools\x86\Dism\dism.exe')
+    ) | Where-Object { Test-Path $_ } | Select-Object -First 1
+    if ($adkBinary) {
         $adkFileVersion = (Get-Item $adkBinary).VersionInfo.FileVersion  # e.g. 10.1.19041.3636
         $adkBuild = ($adkFileVersion -split '[\.\,]')[2]
         $versionMatch = $osBuild -eq $adkBuild
@@ -121,7 +130,7 @@ if ($adkOk) {
             else { "OS build $osBuild vs ADK build $adkBuild - mismatch causes WinPE CAB errors. Reinstall ADK for Win10 22H2." }
         )
     } else {
-        Add-Result 'ADK Version Match' $false 'ADK dism.exe not found - Deployment Tools may not be installed'
+        Add-Result 'ADK Version Match' $false "ADK dism.exe not found under $adkRoot - Deployment Tools may not be installed"
     }
 }
 

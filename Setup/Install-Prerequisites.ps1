@@ -45,21 +45,26 @@ function Write-Status {
     Write-Host "[$Status] $Message" -ForegroundColor $color
 }
 
-function Test-ADKInstalled {
-    $adkPath = 'HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows Kits\Installed Roots'
-    if (Test-Path $adkPath) {
-        $root = (Get-ItemProperty $adkPath -ErrorAction SilentlyContinue).KitsRoot10
-        return ($null -ne $root -and (Test-Path $root))
+function Get-ADKRoot {
+    $regPath = 'HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows Kits\Installed Roots'
+    if (Test-Path $regPath) {
+        $root = (Get-ItemProperty $regPath -ErrorAction SilentlyContinue).KitsRoot10
+        if ($root) { return $root.TrimEnd('\') }
     }
-    return $false
+    # Fallback to known default locations
+    $defaults = @(
+        "${env:ProgramFiles(x86)}\Windows Kits\10",
+        "$env:ProgramFiles\Windows Kits\10"
+    )
+    return $defaults | Where-Object { Test-Path $_ } | Select-Object -First 1
+}
+
+function Test-ADKInstalled {
+    return $null -ne (Get-ADKRoot)
 }
 
 function Get-ADKVersion {
-    $adkPath = 'HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows Kits\Installed Roots'
-    if (Test-Path $adkPath) {
-        return (Get-ItemProperty $adkPath -ErrorAction SilentlyContinue).KitsRoot10
-    }
-    return $null
+    return Get-ADKRoot
 }
 
 function Test-ModuleInstalled {
@@ -125,14 +130,17 @@ if ($adkOk) {
     $adkRoot = Get-ADKVersion
     $osVersion = (Get-CimInstance Win32_OperatingSystem).Version
     $osBuild = ($osVersion -split '\.')[2]
-    $adkBinary = Join-Path $adkRoot 'Assessment and Deployment Kit\Deployment Tools\amd64\Dism\dism.exe'
-    if (Test-Path $adkBinary) {
+    $adkBinary = @(
+        (Join-Path $adkRoot 'Assessment and Deployment Kit\Deployment Tools\amd64\Dism\dism.exe'),
+        (Join-Path $adkRoot 'Assessment and Deployment Kit\Deployment Tools\x86\Dism\dism.exe')
+    ) | Where-Object { Test-Path $_ } | Select-Object -First 1
+    if ($adkBinary) {
         $adkFileVersion = (Get-Item $adkBinary).VersionInfo.FileVersion
         $adkBuild = ($adkFileVersion -split '[\.\,]')[2]
         $adkVersionMatch = $osBuild -eq $adkBuild
         $adkVersionDetail = if ($adkVersionMatch) { "OS build $osBuild matches ADK build $adkBuild" } else { "OS build $osBuild vs ADK build $adkBuild - MISMATCH" }
     } else {
-        $adkVersionDetail = 'ADK dism.exe not found - Deployment Tools may not be installed'
+        $adkVersionDetail = "ADK dism.exe not found under $adkRoot - Deployment Tools may not be installed"
     }
 }
 $scan += [PSCustomObject]@{ Component = 'ADK Version Match'; Status = if ($adkVersionMatch) { 'OK' } else { 'MISSING' }; Detail = $adkVersionDetail }
