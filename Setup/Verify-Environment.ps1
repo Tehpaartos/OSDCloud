@@ -69,9 +69,11 @@ Add-Result 'PowerShell 5.1+' $ps5ok $psVersion.ToString()
 $ps7 = Get-Command pwsh.exe -ErrorAction SilentlyContinue
 Add-Result 'PowerShell 7 (pwsh.exe)' ($null -ne $ps7) $(if ($ps7) { $ps7.Source } else { 'Not found in PATH' })
 
-# 4. TLS 1.2
-$tlsOk = ([Net.ServicePointManager]::SecurityProtocol -band [Net.SecurityProtocolType]::Tls12) -ne 0
-Add-Result 'TLS 1.2 Available' $tlsOk $(if ($tlsOk) { 'Enabled' } else { 'Not available' })
+# 4. TLS 1.2 - check registry so it survives session restarts
+$tlsReg64 = (Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\.NETFramework\v4.0.30319' -Name SchUseStrongCrypto -ErrorAction SilentlyContinue).SchUseStrongCrypto -eq 1
+$tlsReg32 = (Get-ItemProperty 'HKLM:\SOFTWARE\WOW6432Node\Microsoft\.NETFramework\v4.0.30319' -Name SchUseStrongCrypto -ErrorAction SilentlyContinue).SchUseStrongCrypto -eq 1
+$tlsOk = $tlsReg64 -and $tlsReg32
+Add-Result 'TLS 1.2 Persisted' $tlsOk $(if ($tlsOk) { 'Registry keys set (SchUseStrongCrypto=1)' } else { 'Not persisted - run Install-Prerequisites.ps1' })
 
 # 5. NuGet provider
 $nuget = Get-PackageProvider -Name NuGet -ErrorAction SilentlyContinue
@@ -107,21 +109,19 @@ Add-Result 'Windows PE Add-on' $winPEOk $winPEDetail
 # 8b. ADK version matches OS (mismatch causes 0x800f081e CAB errors during template build)
 if ($adkOk) {
     $osVersion = (Get-CimInstance Win32_OperatingSystem).Version  # e.g. 10.0.19045.x for Win10 22H2
-    $adkVersionKey = 'HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows Kits\Installed Roots'
-    $adkVersion = (Get-ItemProperty $adkVersionKey -ErrorAction SilentlyContinue).KitsRoot10
-    # Extract build number from OS (third segment) and ADK path (contains 10.x.NNNNN)
     $osBuild = ($osVersion -split '\.')[2]
-    $adkKitVersion = (Get-ItemProperty $adkVersionKey -ErrorAction SilentlyContinue).PSObject.Properties |
-        Where-Object { $_.Name -like '*Version*' } | Select-Object -First 1 -ExpandProperty Value
-    if ($adkKitVersion) {
-        $adkBuild = ($adkKitVersion -split '\.')[2]
+    # Read ADK version from a known binary - registry has no version property
+    $adkBinary = Join-Path $adkRoot 'Assessment and Deployment Kit\Deployment Tools\amd64\Dism\dism.exe'
+    if (Test-Path $adkBinary) {
+        $adkFileVersion = (Get-Item $adkBinary).VersionInfo.FileVersion  # e.g. 10.1.19041.3636
+        $adkBuild = ($adkFileVersion -split '[\.\,]')[2]
         $versionMatch = $osBuild -eq $adkBuild
         Add-Result 'ADK Version Match' $versionMatch $(
             if ($versionMatch) { "OS build $osBuild matches ADK build $adkBuild" }
-            else { "OS build $osBuild vs ADK build $adkBuild - mismatch causes WinPE CAB errors. Reinstall ADK matching OS version." }
+            else { "OS build $osBuild vs ADK build $adkBuild - mismatch causes WinPE CAB errors. Reinstall ADK for Win10 22H2." }
         )
     } else {
-        Add-Result 'ADK Version Match' $false 'Could not determine ADK build version'
+        Add-Result 'ADK Version Match' $false 'ADK dism.exe not found - Deployment Tools may not be installed'
     }
 }
 

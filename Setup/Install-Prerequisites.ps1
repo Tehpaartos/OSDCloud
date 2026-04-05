@@ -86,9 +86,11 @@ $scan += [PSCustomObject]@{ Component = 'Administrator'; Status = if ($isAdmin) 
 $ps7 = Get-Command pwsh.exe -ErrorAction SilentlyContinue
 $scan += [PSCustomObject]@{ Component = 'PowerShell 7'; Status = if ($ps7) { 'OK' } else { 'MISSING' }; Detail = if ($ps7) { $ps7.Version.ToString() } else { 'Not found in PATH' } }
 
-# TLS 1.2
-$tlsOk = ([Net.ServicePointManager]::SecurityProtocol -band [Net.SecurityProtocolType]::Tls12) -ne 0
-$scan += [PSCustomObject]@{ Component = 'TLS 1.2'; Status = if ($tlsOk) { 'OK' } else { 'MISSING' }; Detail = if ($tlsOk) { 'Enabled' } else { 'Not enforced' } }
+# TLS 1.2 - check registry so result is consistent across sessions
+$tlsReg64 = (Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\.NETFramework\v4.0.30319' -Name SchUseStrongCrypto -ErrorAction SilentlyContinue).SchUseStrongCrypto -eq 1
+$tlsReg32 = (Get-ItemProperty 'HKLM:\SOFTWARE\WOW6432Node\Microsoft\.NETFramework\v4.0.30319' -Name SchUseStrongCrypto -ErrorAction SilentlyContinue).SchUseStrongCrypto -eq 1
+$tlsOk = $tlsReg64 -and $tlsReg32
+$scan += [PSCustomObject]@{ Component = 'TLS 1.2'; Status = if ($tlsOk) { 'OK' } else { 'MISSING' }; Detail = if ($tlsOk) { 'Registry persisted' } else { 'Not persisted in registry' } }
 
 # NuGet provider
 $nuget = Get-PackageProvider -Name NuGet -ErrorAction SilentlyContinue
@@ -116,19 +118,21 @@ if ($adkOk) {
 }
 $scan += [PSCustomObject]@{ Component = 'Windows PE Add-on'; Status = if ($winPEOk) { 'OK' } else { 'MISSING' }; Detail = if ($winPEOk) { 'Installed' } else { 'Not installed - required for OSDCloud template build' } }
 
-# ADK version match
+# ADK version match - read from ADK binary, registry has no version property
 $adkVersionMatch = $false
 $adkVersionDetail = 'Could not check'
 if ($adkOk) {
+    $adkRoot = Get-ADKVersion
     $osVersion = (Get-CimInstance Win32_OperatingSystem).Version
     $osBuild = ($osVersion -split '\.')[2]
-    $adkVersionKey = 'HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows Kits\Installed Roots'
-    $adkKitVersion = (Get-ItemProperty $adkVersionKey -ErrorAction SilentlyContinue).PSObject.Properties |
-        Where-Object { $_.Name -like '*Version*' } | Select-Object -First 1 -ExpandProperty Value
-    if ($adkKitVersion) {
-        $adkBuild = ($adkKitVersion -split '\.')[2]
+    $adkBinary = Join-Path $adkRoot 'Assessment and Deployment Kit\Deployment Tools\amd64\Dism\dism.exe'
+    if (Test-Path $adkBinary) {
+        $adkFileVersion = (Get-Item $adkBinary).VersionInfo.FileVersion
+        $adkBuild = ($adkFileVersion -split '[\.\,]')[2]
         $adkVersionMatch = $osBuild -eq $adkBuild
         $adkVersionDetail = if ($adkVersionMatch) { "OS build $osBuild matches ADK build $adkBuild" } else { "OS build $osBuild vs ADK build $adkBuild - MISMATCH" }
+    } else {
+        $adkVersionDetail = 'ADK dism.exe not found - Deployment Tools may not be installed'
     }
 }
 $scan += [PSCustomObject]@{ Component = 'ADK Version Match'; Status = if ($adkVersionMatch) { 'OK' } else { 'MISSING' }; Detail = $adkVersionDetail }
@@ -215,17 +219,19 @@ try {
 
 # 3. TLS 1.2
 if (-not $tlsOk) {
-    Write-Status 'Enforcing TLS 1.2...' -Status 'INFO'
+    Write-Status 'Persisting TLS 1.2 to registry...' -Status 'INFO'
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-    # Persist via registry so it survives new terminal sessions
+    # Create registry keys if they don't exist, then set SchUseStrongCrypto
     $tlsRegPath = 'HKLM:\SOFTWARE\Microsoft\.NETFramework\v4.0.30319'
+    if (-not (Test-Path $tlsRegPath)) { New-Item -Path $tlsRegPath -Force | Out-Null }
     Set-ItemProperty -Path $tlsRegPath -Name 'SchUseStrongCrypto' -Value 1 -Type DWord -Force
     $tlsRegPath32 = 'HKLM:\SOFTWARE\WOW6432Node\Microsoft\.NETFramework\v4.0.30319'
+    if (-not (Test-Path $tlsRegPath32)) { New-Item -Path $tlsRegPath32 -Force | Out-Null }
     Set-ItemProperty -Path $tlsRegPath32 -Name 'SchUseStrongCrypto' -Value 1 -Type DWord -Force
-    Write-Log 'TLS 1.2 enforced (session + registry)'
-    Write-Status 'TLS 1.2 enforced and persisted to registry.' -Status 'OK'
+    Write-Log 'TLS 1.2 persisted to registry'
+    Write-Status 'TLS 1.2 persisted to registry.' -Status 'OK'
 } else {
-    Write-Status 'TLS 1.2 already enforced.' -Status 'OK'
+    Write-Status 'TLS 1.2 already persisted.' -Status 'OK'
 }
 
 # 4. NuGet provider
