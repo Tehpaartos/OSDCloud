@@ -211,7 +211,7 @@ if (`$LASTEXITCODE -and `$LASTEXITCODE -ne 0) { exit 3 }
 Write-Status 'Running DISM operations under Windows PowerShell 5.1...' -Status 'INFO'
 Write-Log 'Launching PS5.1 for DISM steps'
 
-& $ps5 -NonInteractive -ExecutionPolicy Bypass -Command $dismScript
+& $ps5 -ExecutionPolicy Bypass -Command $dismScript
 
 switch ($LASTEXITCODE) {
     0 {
