@@ -98,7 +98,7 @@ Add-Result 'Windows ADK' $adkOk $adkDetail
 $winPEOk = $false
 $winPEDetail = 'Not installed - required for OSDCloud template build'
 if ($adkOk) {
-    $winPERoot = Join-Path $adkRoot 'Windows Preinstallation Environment'
+    $winPERoot = Join-Path $adkRoot 'Assessment and Deployment Kit\Windows Preinstallation Environment'
     $winPEOk = Test-Path $winPERoot
     $winPEDetail = if ($winPEOk) { $winPERoot } else { 'ADK found but WinPE add-on missing - install adkwinpesetup.exe' }
 }

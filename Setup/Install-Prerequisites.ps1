@@ -111,7 +111,7 @@ $scan += [PSCustomObject]@{ Component = 'Windows ADK'; Status = if ($adkOk) { 'O
 $winPEOk = $false
 if ($adkOk) {
     $adkRoot = Get-ADKVersion
-    $winPERoot = Join-Path $adkRoot 'Windows Preinstallation Environment'
+    $winPERoot = Join-Path $adkRoot 'Assessment and Deployment Kit\Windows Preinstallation Environment'
     $winPEOk = Test-Path $winPERoot
 }
 $scan += [PSCustomObject]@{ Component = 'Windows PE Add-on'; Status = if ($winPEOk) { 'OK' } else { 'MISSING' }; Detail = if ($winPEOk) { 'Installed' } else { 'Not installed - required for OSDCloud template build' } }
@@ -200,8 +200,13 @@ try {
 if (-not $tlsOk) {
     Write-Status 'Enforcing TLS 1.2...' -Status 'INFO'
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-    Write-Log 'TLS 1.2 enforced'
-    Write-Status 'TLS 1.2 enforced.' -Status 'OK'
+    # Persist via registry so it survives new terminal sessions
+    $tlsRegPath = 'HKLM:\SOFTWARE\Microsoft\.NETFramework\v4.0.30319'
+    Set-ItemProperty -Path $tlsRegPath -Name 'SchUseStrongCrypto' -Value 1 -Type DWord -Force
+    $tlsRegPath32 = 'HKLM:\SOFTWARE\WOW6432Node\Microsoft\.NETFramework\v4.0.30319'
+    Set-ItemProperty -Path $tlsRegPath32 -Name 'SchUseStrongCrypto' -Value 1 -Type DWord -Force
+    Write-Log 'TLS 1.2 enforced (session + registry)'
+    Write-Status 'TLS 1.2 enforced and persisted to registry.' -Status 'OK'
 } else {
     Write-Status 'TLS 1.2 already enforced.' -Status 'OK'
 }
