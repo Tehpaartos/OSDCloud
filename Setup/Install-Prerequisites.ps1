@@ -287,7 +287,10 @@ try {
 if (-not $adkOk) {
     Write-Status 'Windows ADK is not installed.' -Status 'WARN'
     Write-Host ''
-    Write-Host '  Download Windows ADK (Deployment Tools only) from:' -ForegroundColor White
+    Write-Host '  Required version: Windows ADK for Windows 10, version 2004 (build 19041)' -ForegroundColor Yellow
+    Write-Host '  This is the correct ADK for Windows 10 22H2 - there is no separate 22H2 ADK.' -ForegroundColor White
+    Write-Host ''
+    Write-Host '  Download ADK (Deployment Tools only):' -ForegroundColor White
     Write-Host '  https://go.microsoft.com/fwlink/?linkid=2289980' -ForegroundColor Cyan
     Write-Host ''
     Write-Host '  Install with: adksetup.exe /features OptionId.DeploymentTools /quiet /norestart' -ForegroundColor White
@@ -301,11 +304,11 @@ if ($adkOk -and -not $adkVersionMatch) {
     Write-Status 'ADK version does not match the OS build.' -Status 'WARN'
     Write-Host ''
     Write-Host '  This causes 0x800f081e errors when OSDCloud tries to inject WinPE language CABs.' -ForegroundColor Yellow
-    Write-Host '  The ADK version must match the Windows build on this machine.' -ForegroundColor White
+    Write-Host '  Required version: Windows ADK for Windows 10, version 2004 (build 19041)' -ForegroundColor White
     Write-Host ''
     Write-Host '  1. Uninstall the current ADK and WinPE add-on from Apps & Features' -ForegroundColor White
-    Write-Host '  2. Download the ADK matching your OS from:' -ForegroundColor White
-    Write-Host '     https://learn.microsoft.com/en-us/windows-hardware/get-started/adk-install' -ForegroundColor Cyan
+    Write-Host '  2. Download ADK for Windows 10, version 2004:' -ForegroundColor White
+    Write-Host '     https://go.microsoft.com/fwlink/?linkid=2289980' -ForegroundColor Cyan
     Write-Host '  3. Re-run this script after reinstalling.' -ForegroundColor White
     Write-Host ''
     Write-Log 'ADK version mismatch detected - prompted user'
@@ -331,7 +334,7 @@ if (-not $osdOk) {
     Write-Status 'Installing OSD module...' -Status 'INFO'
     try {
         # Install to the shared Windows PowerShell path so both PS5.1 and PS7 can find it
-        Install-Module OSD -Force -Scope AllUsers -Path 'C:\Program Files\WindowsPowerShell\Modules'
+        Install-Module OSD -Force -Scope AllUsers
         Write-Log 'OSD module installed'
         Write-Status 'OSD module installed.' -Status 'OK'
     } catch {
@@ -346,7 +349,7 @@ if (-not $osdCloudOk) {
     Write-Status 'Installing OSDCloud module...' -Status 'INFO'
     try {
         # Install to the shared Windows PowerShell path so both PS5.1 and PS7 can find it
-        Install-Module OSDCloud -Force -Scope AllUsers -Path 'C:\Program Files\WindowsPowerShell\Modules'
+        Install-Module OSDCloud -Force -Scope AllUsers
         Write-Log 'OSDCloud module installed'
         Write-Status 'OSDCloud module installed.' -Status 'OK'
     } catch {
