@@ -58,7 +58,7 @@ function Add-Result {
 
 # 1. Administrator
 $isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
-Add-Result 'Running as Administrator' $isAdmin (if ($isAdmin) { 'Yes' } else { 'Re-run as Administrator' })
+Add-Result 'Running as Administrator' $isAdmin $(if ($isAdmin) { 'Yes' } else { 'Re-run as Administrator' })
 
 # 2. PowerShell version
 $psVersion = $PSVersionTable.PSVersion
@@ -67,20 +67,20 @@ Add-Result 'PowerShell 5.1+' $ps5ok $psVersion.ToString()
 
 # 3. PowerShell 7 in PATH
 $ps7 = Get-Command pwsh.exe -ErrorAction SilentlyContinue
-Add-Result 'PowerShell 7 (pwsh.exe)' ($null -ne $ps7) (if ($ps7) { $ps7.Source } else { 'Not found in PATH' })
+Add-Result 'PowerShell 7 (pwsh.exe)' ($null -ne $ps7) $(if ($ps7) { $ps7.Source } else { 'Not found in PATH' })
 
 # 4. TLS 1.2
 $tlsOk = ([Net.ServicePointManager]::SecurityProtocol -band [Net.SecurityProtocolType]::Tls12) -ne 0
-Add-Result 'TLS 1.2 Available' $tlsOk (if ($tlsOk) { 'Enabled' } else { 'Not available' })
+Add-Result 'TLS 1.2 Available' $tlsOk $(if ($tlsOk) { 'Enabled' } else { 'Not available' })
 
 # 5. NuGet provider
 $nuget = Get-PackageProvider -Name NuGet -ErrorAction SilentlyContinue
-Add-Result 'NuGet Package Provider' ($null -ne $nuget) (if ($nuget) { $nuget.Version.ToString() } else { 'Not installed' })
+Add-Result 'NuGet Package Provider' ($null -ne $nuget) $(if ($nuget) { $nuget.Version.ToString() } else { 'Not installed' })
 
 # 6. PSGallery trusted
 $gallery = Get-PSRepository -Name PSGallery -ErrorAction SilentlyContinue
 $galleryTrusted = $gallery -and $gallery.InstallationPolicy -eq 'Trusted'
-Add-Result 'PSGallery Trusted' $galleryTrusted (if ($galleryTrusted) { 'Trusted' } else { 'Not trusted' })
+Add-Result 'PSGallery Trusted' $galleryTrusted $(if ($galleryTrusted) { 'Trusted' } else { 'Not trusted' })
 
 # 7. Windows ADK
 $adkPath = 'HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows Kits\Installed Roots'
@@ -96,21 +96,21 @@ Add-Result 'Windows ADK' $adkOk $adkDetail
 
 # 8. Windows PE Add-on (optional but recommended)
 $wpeAddon = Test-Path 'C:\Program Files (x86)\Windows Kits\10\Assessment and Deployment Kit\Windows Preinstallation Environment'
-Add-Result 'Windows PE Add-on' $wpeAddon (if ($wpeAddon) { 'Found' } else { 'Not found (optional for WinRE builds)' })
+Add-Result 'Windows PE Add-on' $wpeAddon $(if ($wpeAddon) { 'Found' } else { 'Not found (optional for WinRE builds)' })
 
 # 9. OSD module
 $osd = Get-Module -ListAvailable OSD -ErrorAction SilentlyContinue | Sort-Object Version -Descending | Select-Object -First 1
-Add-Result 'OSD Module' ($null -ne $osd) (if ($osd) { "v$($osd.Version)" } else { 'Not installed - run Install-Prerequisites.ps1' })
+Add-Result 'OSD Module' ($null -ne $osd) $(if ($osd) { "v$($osd.Version)" } else { 'Not installed - run Install-Prerequisites.ps1' })
 
 # 10. OSDCloud module
 $osdCloud = Get-Module -ListAvailable OSDCloud -ErrorAction SilentlyContinue | Sort-Object Version -Descending | Select-Object -First 1
-Add-Result 'OSDCloud Module' ($null -ne $osdCloud) (if ($osdCloud) { "v$($osdCloud.Version)" } else { 'Not installed - run Install-Prerequisites.ps1' })
+Add-Result 'OSDCloud Module' ($null -ne $osdCloud) $(if ($osdCloud) { "v$($osdCloud.Version)" } else { 'Not installed - run Install-Prerequisites.ps1' })
 
 # 11. Internet connectivity
 Write-Verbose 'Testing internet connectivity...'
 try {
     $netTest = Test-NetConnection -ComputerName 'www.microsoft.com' -InformationLevel Quiet -WarningAction SilentlyContinue -ErrorAction SilentlyContinue
-    Add-Result 'Internet Connectivity' $netTest (if ($netTest) { 'Connected to microsoft.com' } else { 'No connection - required for module downloads' })
+    Add-Result 'Internet Connectivity' $netTest $(if ($netTest) { 'Connected to microsoft.com' } else { 'No connection - required for module downloads' })
 } catch {
     Add-Result 'Internet Connectivity' $false "Error: $_"
 }
