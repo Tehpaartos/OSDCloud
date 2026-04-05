@@ -137,8 +137,10 @@ if ($adkOk) {
     if ($adkBinary) {
         $adkFileVersion = (Get-Item $adkBinary).VersionInfo.FileVersion
         $adkBuild = ($adkFileVersion -split '[\.\,]')[2]
-        $adkVersionMatch = $osBuild -eq $adkBuild
-        $adkVersionDetail = if ($adkVersionMatch) { "OS build $osBuild matches ADK build $adkBuild" } else { "OS build $osBuild vs ADK build $adkBuild - MISMATCH" }
+        # The Windows 10 ADK (build 19041) is the only ADK for all Win10 versions 2004-22H2.
+        $win10AdkBuilds = @('19041', '19042', '19043', '19044', '19045')
+        $adkVersionMatch = ($osBuild -eq $adkBuild) -or ($adkBuild -eq '19041' -and $osBuild -in $win10AdkBuilds)
+        $adkVersionDetail = if ($adkVersionMatch) { "ADK build $adkBuild is valid for OS build $osBuild (Win10 22H2)" } else { "OS build $osBuild vs ADK build $adkBuild - MISMATCH" }
     } else {
         $adkVersionDetail = "ADK dism.exe not found under $adkRoot - Deployment Tools may not be installed"
     }

@@ -135,10 +135,14 @@ Rebuild the boot image with the correct URL.
 
 ### ADK version mismatch
 
-**Symptom:** `New-OSDCloudTemplate` errors with a WinRE version mismatch.
+**Symptom:** `New-OSDCloudTemplate` emits `WARNING: Add-WindowsPackage failed. Error code = 0x800f081e` for WinPE language CABs.
 
-**Fix:** Ensure the ADK version matches the Windows 10 source WinRE. Supported versions:
-- ADK 10.1.26100.2454
-- ADK 10.1.28000.1
+**Cause:** The ADK version doesn't match the WinRE image on the build machine.
 
-Run `Setup/Verify-Environment.ps1` to check the installed ADK version.
+**Fix:** Install the **ADK for Windows 10, version 2004** — this is the correct ADK for Windows 10 22H2 build machines. Microsoft does not publish a separate ADK per Windows 10 release after 2004; the 2004 ADK supports all Windows 10 builds from 19041 through 19045.
+
+1. Uninstall the existing ADK and WinPE add-on from Apps & Features
+2. Download and install:
+   - ADK: https://go.microsoft.com/fwlink/?linkid=2289980
+   - WinPE add-on: https://go.microsoft.com/fwlink/?linkid=2289981
+3. Run `Setup/Verify-Environment.ps1` — ADK Version Match should show PASS
