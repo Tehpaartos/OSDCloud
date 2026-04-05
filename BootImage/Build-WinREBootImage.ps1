@@ -91,7 +91,7 @@ Write-Host '============================================================' -Foreg
 Write-Host ''
 
 # OS check
-$osCaption = (Get-WmiObject Win32_OperatingSystem).Caption
+$osCaption = (Get-CimInstance Win32_OperatingSystem).Caption
 Write-Status "Build machine OS: $osCaption" -Status 'INFO'
 Write-Log "Build machine OS: $osCaption"
 

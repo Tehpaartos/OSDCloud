@@ -107,6 +107,15 @@ $scan += [PSCustomObject]@{ Component = 'PowerShellGet'; Status = if ($psget) { 
 $adkOk = Test-ADKInstalled
 $scan += [PSCustomObject]@{ Component = 'Windows ADK'; Status = if ($adkOk) { 'OK' } else { 'MISSING' }; Detail = if ($adkOk) { Get-ADKVersion } else { 'Not installed' } }
 
+# Windows PE Add-on
+$winPEOk = $false
+if ($adkOk) {
+    $adkRoot = Get-ADKVersion
+    $winPERoot = Join-Path $adkRoot 'Windows Preinstallation Environment'
+    $winPEOk = Test-Path $winPERoot
+}
+$scan += [PSCustomObject]@{ Component = 'Windows PE Add-on'; Status = if ($winPEOk) { 'OK' } else { 'MISSING' }; Detail = if ($winPEOk) { 'Installed' } else { 'Not installed - required for OSDCloud template build' } }
+
 # OSD module
 $osdOk = Test-ModuleInstalled -Name 'OSD'
 $scan += [PSCustomObject]@{ Component = 'OSD Module'; Status = if ($osdOk) { 'OK' } else { 'MISSING' }; Detail = if ($osdOk) { (Get-Module -ListAvailable OSD | Sort-Object Version -Descending | Select-Object -First 1).Version.ToString() } else { 'Not installed' } }
@@ -246,6 +255,20 @@ if (-not $adkOk) {
     Write-Host ''
     Write-Status 'Please install Windows ADK manually, then re-run this script.' -Status 'WARN'
     Write-Log 'ADK not installed - prompted user to install manually'
+}
+
+# 7b. Windows PE Add-on
+if ($adkOk -and -not $winPEOk) {
+    Write-Status 'Windows PE Add-on is not installed.' -Status 'WARN'
+    Write-Host ''
+    Write-Host '  The WinPE add-on is a separate download from the ADK.' -ForegroundColor White
+    Write-Host '  Download from:' -ForegroundColor White
+    Write-Host '  https://go.microsoft.com/fwlink/?linkid=2289981' -ForegroundColor Cyan
+    Write-Host ''
+    Write-Host '  Install with: adkwinpesetup.exe /features OptionId.WindowsPreinstallationEnvironment /quiet /norestart' -ForegroundColor White
+    Write-Host ''
+    Write-Status 'Please install the Windows PE Add-on manually, then re-run this script.' -Status 'WARN'
+    Write-Log 'WinPE add-on not installed - prompted user to install manually'
 }
 
 # 8. OSD module

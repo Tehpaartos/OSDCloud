@@ -94,6 +94,16 @@ if ($adkOk) {
 }
 Add-Result 'Windows ADK' $adkOk $adkDetail
 
+# 8. Windows PE Add-on
+$winPEOk = $false
+$winPEDetail = 'Not installed - required for OSDCloud template build'
+if ($adkOk) {
+    $winPERoot = Join-Path $adkRoot 'Windows Preinstallation Environment'
+    $winPEOk = Test-Path $winPERoot
+    $winPEDetail = if ($winPEOk) { $winPERoot } else { 'ADK found but WinPE add-on missing - install adkwinpesetup.exe' }
+}
+Add-Result 'Windows PE Add-on' $winPEOk $winPEDetail
+
 # 9. OSD module
 $osd = Get-Module -ListAvailable OSD -ErrorAction SilentlyContinue | Sort-Object Version -Descending | Select-Object -First 1
 Add-Result 'OSD Module' ($null -ne $osd) $(if ($osd) { "v$($osd.Version)" } else { 'Not installed - run Install-Prerequisites.ps1' })
