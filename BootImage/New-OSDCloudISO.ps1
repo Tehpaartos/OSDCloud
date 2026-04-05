@@ -125,37 +125,52 @@ try {
     exit 1
 }
 
-# --- Find and move the generated ISO ---
-$generatedISO = Get-ChildItem -Path $WorkspacePath -Filter '*.iso' -Recurse -ErrorAction SilentlyContinue |
-    Sort-Object LastWriteTime -Descending | Select-Object -First 1
+# --- Find and move generated ISOs ---
+# OSDCloud generates both standard and NoPrompt ISOs in a fixed location.
+# Search the workspace and its parent for any ISOs created in the last 10 minutes.
+if (-not (Test-Path $OutputPath)) { New-Item -ItemType Directory -Path $OutputPath -Force | Out-Null }
 
-if (-not $generatedISO) {
-    # OSDCloud may write next to the workspace folder
-    $generatedISO = Get-ChildItem -Path (Split-Path $WorkspacePath) -Filter '*.iso' -ErrorAction SilentlyContinue |
-        Sort-Object LastWriteTime -Descending | Select-Object -First 1
+$searchPaths = @($WorkspacePath, (Split-Path $WorkspacePath))
+$cutoff = (Get-Date).AddMinutes(-10)
+$generatedISOs = $searchPaths | ForEach-Object {
+    Get-ChildItem -Path $_ -Filter '*.iso' -Recurse -ErrorAction SilentlyContinue |
+        Where-Object { $_.LastWriteTime -gt $cutoff }
+} | Sort-Object { $_.Name -notlike '*NoPrompt*' }  # standard first
+
+$isoStandard = $null
+$isoNoPrompt = $null
+
+foreach ($iso in $generatedISOs) {
+    if ($iso.Name -like '*NoPrompt*') {
+        $dest = Join-Path $OutputPath "OSDCloud-v${version}-NoPrompt.iso"
+        Move-Item -Path $iso.FullName -Destination $dest -Force
+        $isoNoPrompt = $dest
+        Write-Status "NoPrompt ISO moved to: $dest" -Status 'OK'
+        Write-Log "NoPrompt ISO moved: $($iso.FullName) -> $dest"
+    } else {
+        $dest = Join-Path $OutputPath "OSDCloud-v${version}.iso"
+        Move-Item -Path $iso.FullName -Destination $dest -Force
+        $isoStandard = $dest
+        Write-Status "Standard ISO moved to: $dest" -Status 'OK'
+        Write-Log "Standard ISO moved: $($iso.FullName) -> $dest"
+    }
 }
 
-if ($generatedISO) {
-    if (-not (Test-Path $OutputPath)) { New-Item -ItemType Directory -Path $OutputPath -Force | Out-Null }
-    Move-Item -Path $generatedISO.FullName -Destination $isoStandard -Force
-    Write-Status "ISO moved to: $isoStandard" -Status 'OK'
-    Write-Log "ISO moved: $($generatedISO.FullName) -> $isoStandard"
-} else {
-    Write-Status 'ISO was generated but could not be located to rename. Check the workspace folder.' -Status 'WARN'
-    Write-Log 'WARN: Could not locate generated ISO for rename'
-    $isoStandard = $null
+if (-not $isoStandard -and -not $isoNoPrompt) {
+    Write-Status 'ISOs were generated but could not be located. Check the workspace folder.' -Status 'WARN'
+    Write-Log 'WARN: Could not locate generated ISOs'
 }
 
-# --- SHA256 hash ---
+# --- SHA256 hashes ---
 Write-Host ''
-if ($isoStandard -and (Test-Path $isoStandard)) {
-    Write-Status 'SHA256 Hash (for verification):' -Status 'INFO'
-    $hash = (Get-FileHash -Path $isoStandard -Algorithm SHA256).Hash
-    $size = [math]::Round((Get-Item $isoStandard).Length / 1MB, 1)
-    Write-Host "  $([System.IO.Path]::GetFileName($isoStandard))" -ForegroundColor White
+Write-Status 'SHA256 Hashes (for verification):' -Status 'INFO'
+foreach ($iso in @($isoStandard, $isoNoPrompt) | Where-Object { $_ -and (Test-Path $_) }) {
+    $hash = (Get-FileHash -Path $iso -Algorithm SHA256).Hash
+    $size = [math]::Round((Get-Item $iso).Length / 1MB, 1)
+    Write-Host "  $([System.IO.Path]::GetFileName($iso))" -ForegroundColor White
     Write-Host "    SHA256: $hash" -ForegroundColor Gray
     Write-Host "    Size:   ${size} MB" -ForegroundColor Gray
-    Write-Log "$([System.IO.Path]::GetFileName($isoStandard)) SHA256=$hash Size=${size}MB"
+    Write-Log "$([System.IO.Path]::GetFileName($iso)) SHA256=$hash Size=${size}MB"
 }
 
 # --- Summary ---
