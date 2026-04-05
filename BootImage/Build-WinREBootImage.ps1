@@ -149,6 +149,30 @@ Write-Status "Deploy URL: $DeployURL" -Status 'INFO'
 Write-Host ''
 
 # ---------------------------------------------------------------------------
+# Pre-Step - Dismount any stale WIM mounts from previous interrupted builds
+# ---------------------------------------------------------------------------
+Write-Status 'Checking for stale WIM mounts...' -Status 'INFO'
+$staleMounts = Get-WindowsImage -Mounted -ErrorAction SilentlyContinue
+if ($staleMounts) {
+    Write-Status "Found $($staleMounts.Count) stale mount(s) - dismounting..." -Status 'WARN'
+    foreach ($mount in $staleMounts) {
+        try {
+            Dismount-WindowsImage -Path $mount.MountPath -Discard -ErrorAction Stop
+            Write-Status "Dismounted: $($mount.MountPath)" -Status 'OK'
+            Write-Log "Dismounted stale WIM: $($mount.MountPath)"
+        } catch {
+            Write-Status "Could not dismount $($mount.MountPath): $_" -Status 'WARN'
+            Write-Log "WARN dismounting stale WIM: $_"
+        }
+    }
+    # Clear any remaining mount metadata
+    Clear-WindowsCorruptMountPoint -ErrorAction SilentlyContinue
+    Write-Status 'Stale mounts cleared.' -Status 'OK'
+} else {
+    Write-Status 'No stale mounts found.' -Status 'INFO'
+}
+
+# ---------------------------------------------------------------------------
 # Step 1 - Create OSDCloud Template (WinRE)
 # ---------------------------------------------------------------------------
 Write-Status "Creating OSDCloud template '$TemplateName' from WinRE..." -Status 'INFO'
