@@ -42,7 +42,7 @@ Open `Deployment/Deploy-Windows11.ps1` and confirm the OS options match your env
 
 ```powershell
 $OSVersion    = 'Windows 11'
-$OSReleaseID  = '24H2'
+$OSReleaseID  = '25H2'
 $OSEdition    = 'Pro'       # Pro | Education | Enterprise
 $OSLanguage   = 'en-au'
 $OSActivation = 'Retail'    # Retail | Volume
@@ -98,14 +98,7 @@ https://download.osdcloud.tehpaartos.com/osdcloud/OSDCloud.iso
 
 ## Step 6 - Update VERSION and CHANGELOG
 
-```powershell
-# VERSION file already set to 1.0.0 - update if needed
-# Add an ISO Release History entry to CHANGELOG.md
-
-git add VERSION CHANGELOG.md
-git commit -m "Release v1.0.0 - initial ISO"
-git push
-```
+Update `VERSION` to the current release number if needed, and add an entry to `CHANGELOG.md` under ISO Release History.
 
 ---
 

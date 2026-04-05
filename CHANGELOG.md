@@ -18,7 +18,7 @@ Versioning follows [Semantic Versioning](https://semver.org/): `MAJOR.MINOR.PATC
 
 ### Added
 - Initial repository scaffolding and project structure
-- `Deployment/Deploy-Windows11.ps1` - cloud deployment script (Windows 11 24H2, en-AU)
+- `Deployment/Deploy-Windows11.ps1` - cloud deployment script (Windows 11 25H2, en-AU)
 - `Deployment/Start-OSDCloudGUI.ps1` - optional interactive GUI variant
 - `Setup/Install-Prerequisites.ps1` - full prereq installer with two-phase scan/install
 - `Setup/Verify-Environment.ps1` - post-install health check
@@ -41,7 +41,7 @@ Versioning follows [Semantic Versioning](https://semver.org/): `MAJOR.MINOR.PATC
 
 | Version | Date       | Notes                                  |
 |---------|------------|----------------------------------------|
-| 1.0.0   | 2026-04-05 | Initial release - Windows 11 24H2 Pro en-AU |
+| 1.0.0   | 2026-04-05 | Initial release - Windows 11 25H2 Pro en-AU |
 
 ---
 

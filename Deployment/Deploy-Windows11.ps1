@@ -18,7 +18,7 @@ param (
 # Edit these values to change what gets deployed.
 # =============================================================================
 $OSVersion    = 'Windows 11'
-$OSReleaseID  = '24H2'
+$OSReleaseID  = '25H2'
 $OSEdition    = 'Pro'      # Pro | Education | Enterprise
 $OSLanguage   = 'en-au'
 $OSActivation = 'Retail'   # Retail | Volume
