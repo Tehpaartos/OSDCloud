@@ -321,7 +321,7 @@ if ($adkOk -and -not $adkVersionMatch) {
 }
 
 # 7b. Windows PE Add-on
-if ($adkOk -and -not $winPEOk) {
+if (-not $winPEOk) {
     Write-Host ''
     Write-Host '  === Windows PE Add-on - Not Installed ===' -ForegroundColor Yellow
     Write-Host ''
