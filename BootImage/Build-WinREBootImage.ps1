@@ -190,11 +190,9 @@ if ((Test-Path `$ps7ModulePath) -and (`$env:PSModulePath -notlike "*`$ps7ModuleP
     `$env:PSModulePath = `$ps7ModulePath + ';' + `$env:PSModulePath
 }
 
-# Pre-install NuGet provider so module imports never prompt interactively
-`$nuget = Get-PackageProvider -Name NuGet -ErrorAction SilentlyContinue
-if (`$null -eq `$nuget -or `$nuget.Version -lt [Version]'2.8.5.201') {
-    Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force -Scope AllUsers -ForceBootstrap | Out-Null
-}
+# Pre-install NuGet provider so module imports never prompt interactively.
+# -ForceBootstrap on Install-PackageProvider suppresses the interactive prompt entirely.
+Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force -Scope AllUsers -ForceBootstrap | Out-Null
 
 Import-Module OSDCloud -Force -ErrorAction Stop
 

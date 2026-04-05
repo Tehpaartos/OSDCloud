@@ -76,7 +76,7 @@ $tlsOk = $tlsReg64 -and $tlsReg32
 Add-Result 'TLS 1.2 Persisted' $tlsOk $(if ($tlsOk) { 'Registry keys set (SchUseStrongCrypto=1)' } else { 'Not persisted - run Install-Prerequisites.ps1' })
 
 # 5. NuGet provider (minimum 2.8.5.201 required by PowerShellGet)
-$nuget = Get-PackageProvider -Name NuGet -ErrorAction SilentlyContinue
+$nuget = Get-PackageProvider -Name NuGet -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
 $nugetOk = $null -ne $nuget -and $nuget.Version -ge [Version]'2.8.5.201'
 Add-Result 'NuGet Package Provider' $nugetOk $(if ($nugetOk) { $nuget.Version.ToString() } elseif ($nuget) { "v$($nuget.Version) - too old, minimum 2.8.5.201 required" } else { 'Not installed - run Install-Prerequisites.ps1' })
 

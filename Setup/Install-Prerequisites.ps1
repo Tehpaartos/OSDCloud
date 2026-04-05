@@ -98,7 +98,7 @@ $tlsOk = $tlsReg64 -and $tlsReg32
 $scan += [PSCustomObject]@{ Component = 'TLS 1.2'; Status = if ($tlsOk) { 'OK' } else { 'MISSING' }; Detail = if ($tlsOk) { 'Registry persisted' } else { 'Not persisted in registry' } }
 
 # NuGet provider (minimum 2.8.5.201 required by PowerShellGet)
-$nuget = Get-PackageProvider -Name NuGet -ErrorAction SilentlyContinue
+$nuget = Get-PackageProvider -Name NuGet -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
 $nugetOk = $null -ne $nuget -and $nuget.Version -ge [Version]'2.8.5.201'
 $scan += [PSCustomObject]@{ Component = 'NuGet Provider'; Status = if ($nugetOk) { 'OK' } else { 'MISSING' }; Detail = if ($nugetOk) { $nuget.Version.ToString() } elseif ($nuget) { "v$($nuget.Version) - too old" } else { 'Not installed' } }
 
