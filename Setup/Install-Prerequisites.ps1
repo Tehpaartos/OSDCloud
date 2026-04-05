@@ -283,49 +283,49 @@ try {
     Write-Log "WARN updating PowerShellGet: $_"
 }
 
-# 7. Windows ADK
-if (-not $adkOk) {
-    Write-Status 'Windows ADK is not installed.' -Status 'WARN'
+# 7. Windows ADK + WinPE Add-on
+# Always show both download links together - they are always needed as a pair.
+if (-not $adkOk -or -not $winPEOk) {
     Write-Host ''
-    Write-Host '  Required version: Windows ADK for Windows 10, version 2004 (build 19041)' -ForegroundColor Yellow
+    Write-Host '  -------------------------------------------------------' -ForegroundColor Yellow
+    Write-Host '  Windows ADK and/or Windows PE Add-on requires attention' -ForegroundColor Yellow
+    Write-Host '  -------------------------------------------------------' -ForegroundColor Yellow
+    Write-Host ''
+    Write-Host '  Required version: Windows ADK for Windows 10, version 2004 (build 19041)' -ForegroundColor White
     Write-Host '  This is the correct ADK for Windows 10 22H2 - there is no separate 22H2 ADK.' -ForegroundColor White
     Write-Host ''
-    Write-Host '  Download ADK (Deployment Tools only):' -ForegroundColor White
+    if (-not $adkOk) {
+        Write-Status 'Windows ADK is not installed.' -Status 'WARN'
+    }
+    if (-not $winPEOk) {
+        Write-Status 'Windows PE Add-on is not installed.' -Status 'WARN'
+    }
+    Write-Host ''
+    Write-Host '  Step 1 - Download and install the ADK (select Deployment Tools only):' -ForegroundColor White
     Write-Host '  https://go.microsoft.com/fwlink/?linkid=2289980' -ForegroundColor Cyan
     Write-Host ''
-    Write-Host '  Install with: adksetup.exe /features OptionId.DeploymentTools /quiet /norestart' -ForegroundColor White
+    Write-Host '  Step 2 - Download and install the WinPE Add-on (separate installer):' -ForegroundColor White
+    Write-Host '  https://go.microsoft.com/fwlink/?linkid=2289981' -ForegroundColor Cyan
     Write-Host ''
-    Write-Status 'Please install Windows ADK manually, then re-run this script.' -Status 'WARN'
-    Write-Log 'ADK not installed - prompted user to install manually'
+    Write-Status 'Re-run this script after installing both.' -Status 'WARN'
+    Write-Log "ADK installed=$adkOk WinPE installed=$winPEOk - prompted user"
 }
 
 # 7a. ADK version mismatch
 if ($adkOk -and -not $adkVersionMatch) {
-    Write-Status 'ADK version does not match the OS build.' -Status 'WARN'
+    Write-Status 'ADK version does not match the required version.' -Status 'WARN'
     Write-Host ''
-    Write-Host '  This causes 0x800f081e errors when OSDCloud tries to inject WinPE language CABs.' -ForegroundColor Yellow
+    Write-Host '  This causes 0x800f081e errors when building the WinPE template.' -ForegroundColor Yellow
     Write-Host '  Required version: Windows ADK for Windows 10, version 2004 (build 19041)' -ForegroundColor White
     Write-Host ''
-    Write-Host '  1. Uninstall the current ADK and WinPE add-on from Apps & Features' -ForegroundColor White
+    Write-Host '  1. Uninstall the current ADK and WinPE Add-on from Apps & Features' -ForegroundColor White
     Write-Host '  2. Download ADK for Windows 10, version 2004:' -ForegroundColor White
     Write-Host '     https://go.microsoft.com/fwlink/?linkid=2289980' -ForegroundColor Cyan
-    Write-Host '  3. Re-run this script after reinstalling.' -ForegroundColor White
+    Write-Host '  3. Download WinPE Add-on for Windows 10, version 2004:' -ForegroundColor White
+    Write-Host '     https://go.microsoft.com/fwlink/?linkid=2289981' -ForegroundColor Cyan
+    Write-Host '  4. Re-run this script after reinstalling both.' -ForegroundColor White
     Write-Host ''
     Write-Log 'ADK version mismatch detected - prompted user'
-}
-
-# 7b. Windows PE Add-on
-if ($adkOk -and -not $winPEOk) {
-    Write-Status 'Windows PE Add-on is not installed.' -Status 'WARN'
-    Write-Host ''
-    Write-Host '  The WinPE add-on is a separate download from the ADK.' -ForegroundColor White
-    Write-Host '  Download from:' -ForegroundColor White
-    Write-Host '  https://go.microsoft.com/fwlink/?linkid=2289981' -ForegroundColor Cyan
-    Write-Host ''
-    Write-Host '  Install with: adkwinpesetup.exe /features OptionId.WindowsPreinstallationEnvironment /quiet /norestart' -ForegroundColor White
-    Write-Host ''
-    Write-Status 'Please install the Windows PE Add-on manually, then re-run this script.' -Status 'WARN'
-    Write-Log 'WinPE add-on not installed - prompted user to install manually'
 }
 
 
