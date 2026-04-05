@@ -94,10 +94,6 @@ if ($adkOk) {
 }
 Add-Result 'Windows ADK' $adkOk $adkDetail
 
-# 8. Windows PE Add-on (optional but recommended)
-$wpeAddon = Test-Path 'C:\Program Files (x86)\Windows Kits\10\Assessment and Deployment Kit\Windows Preinstallation Environment'
-Add-Result 'Windows PE Add-on' $wpeAddon $(if ($wpeAddon) { 'Found' } else { 'Not found (optional for WinRE builds)' })
-
 # 9. OSD module
 $osd = Get-Module -ListAvailable OSD -ErrorAction SilentlyContinue | Sort-Object Version -Descending | Select-Object -First 1
 Add-Result 'OSD Module' ($null -ne $osd) $(if ($osd) { "v$($osd.Version)" } else { 'Not installed - run Install-Prerequisites.ps1' })

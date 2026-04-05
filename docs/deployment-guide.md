@@ -38,7 +38,7 @@ All checks should pass before continuing.
 
 ## Step 2 - Configure the Deployment Script
 
-Edit `Deployment/Deploy-Windows11.ps1` and set the OS options for your environment:
+Open `Deployment/Deploy-Windows11.ps1` and confirm the OS options match your environment:
 
 ```powershell
 $OSVersion    = 'Windows 11'
@@ -48,16 +48,7 @@ $OSLanguage   = 'en-au'
 $OSActivation = 'Retail'    # Retail | Volume
 ```
 
-Commit and push to `main`:
-
-```powershell
-git add Deployment/Deploy-Windows11.ps1
-git commit -m "Configure deployment: Windows 11 24H2 Pro en-AU"
-git push
-```
-
-Verify the raw URL returns the updated file:
-`https://raw.githubusercontent.com/Tehpaartos/OSDCloud/main/Deployment/Deploy-Windows11.ps1`
+Confirm each value is correct before continuing. No changes are needed if the defaults match your target deployment.
 
 ---
 
