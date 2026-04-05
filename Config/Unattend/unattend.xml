@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    OSDCloud Unattended Answer File Template
+    =========================================
+    Regional settings: en-AU, AUS timezone
+    OOBE: suppressed where possible
+    Local admin account: placeholder only - fill in before use, never commit with a password.
+
+    IMPORTANT: Do not commit this file with a plaintext or base64-encoded password.
+    AutopilotConfigurationFile.json is excluded from the repo via .gitignore.
+-->
+<unattend xmlns="urn:schemas-microsoft-com:unattend">
+
+  <!-- =====================================================================
+       Windows PE (Pass 1) - runs during WinPE phase
+       ===================================================================== -->
+  <settings pass="windowsPE">
+
+    <component name="Microsoft-Windows-International-Core-WinPE"
+               processorArchitecture="amd64"
+               publicKeyToken="31bf3856ad364e35"
+               language="neutral"
+               versionScope="nonSxS"
+               xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State">
+      <SetupUILanguage>
+        <UILanguage>en-AU</UILanguage>
+      </SetupUILanguage>
+      <InputLocale>0c09:00000409</InputLocale>
+      <SystemLocale>en-AU</SystemLocale>
+      <UILanguage>en-AU</UILanguage>
+      <UILanguageFallback>en-US</UILanguageFallback>
+      <UserLocale>en-AU</UserLocale>
+    </component>
+
+    <component name="Microsoft-Windows-Setup"
+               processorArchitecture="amd64"
+               publicKeyToken="31bf3856ad364e35"
+               language="neutral"
+               versionScope="nonSxS"
+               xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State">
+      <UserData>
+        <AcceptEula>true</AcceptEula>
+      </UserData>
+    </component>
+
+  </settings>
+
+  <!-- =====================================================================
+       Specialize (Pass 6) - runs after hardware detection
+       ===================================================================== -->
+  <settings pass="specialize">
+
+    <component name="Microsoft-Windows-International-Core"
+               processorArchitecture="amd64"
+               publicKeyToken="31bf3856ad364e35"
+               language="neutral"
+               versionScope="nonSxS"
+               xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State">
+      <InputLocale>0c09:00000409</InputLocale>
+      <SystemLocale>en-AU</SystemLocale>
+      <UILanguage>en-AU</UILanguage>
+      <UserLocale>en-AU</UserLocale>
+    </component>
+
+    <component name="Microsoft-Windows-Shell-Setup"
+               processorArchitecture="amd64"
+               publicKeyToken="31bf3856ad364e35"
+               language="neutral"
+               versionScope="nonSxS"
+               xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State">
+      <TimeZone>AUS Eastern Standard Time</TimeZone>
+      <ComputerName>*</ComputerName>
+    </component>
+
+  </settings>
+
+  <!-- =====================================================================
+       OOBE System (Pass 7) - runs during Out-of-Box Experience
+       ===================================================================== -->
+  <settings pass="oobeSystem">
+
+    <component name="Microsoft-Windows-Shell-Setup"
+               processorArchitecture="amd64"
+               publicKeyToken="31bf3856ad364e35"
+               language="neutral"
+               versionScope="nonSxS"
+               xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State">
+
+      <OOBE>
+        <HideEULAPage>true</HideEULAPage>
+        <HideLocalAccountScreen>false</HideLocalAccountScreen>
+        <HideOEMRegistrationScreen>true</HideOEMRegistrationScreen>
+        <HideOnlineAccountScreens>false</HideOnlineAccountScreens>
+        <HideWirelessSetupInOOBE>false</HideWirelessSetupInOOBE>
+        <ProtectYourPC>3</ProtectYourPC>
+        <SkipMachineOOBE>false</SkipMachineOOBE>
+        <SkipUserOOBE>false</SkipUserOOBE>
+      </OOBE>
+
+      <!--
+          LOCAL ADMIN ACCOUNT (optional)
+          ==============================
+          Uncomment and fill in the values below to create a local admin account during OOBE.
+          NEVER commit this file with a password filled in.
+          Passwords must be stored externally (e.g. BitLocker-protected USB or Azure Key Vault).
+
+      <UserAccounts>
+        <LocalAccounts>
+          <LocalAccount wcm:action="add">
+            <Name>LocalAdmin</Name>
+            <Group>Administrators</Group>
+            <Password>
+              <Value>PLACEHOLDER - DO NOT COMMIT WITH A REAL PASSWORD</Value>
+              <PlainText>true</PlainText>
+            </Password>
+          </LocalAccount>
+        </LocalAccounts>
+      </UserAccounts>
+      -->
+
+    </component>
+
+    <component name="Microsoft-Windows-International-Core"
+               processorArchitecture="amd64"
+               publicKeyToken="31bf3856ad364e35"
+               language="neutral"
+               versionScope="nonSxS"
+               xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State">
+      <InputLocale>0c09:00000409</InputLocale>
+      <SystemLocale>en-AU</SystemLocale>
+      <UILanguage>en-AU</UILanguage>
+      <UserLocale>en-AU</UserLocale>
+    </component>
+
+  </settings>
+
+</unattend>

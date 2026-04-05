@@ -1,0 +1,10 @@
+{
+  "BrandName": "OSDCloud",
+  "OSVersion": "Windows 11",
+  "OSReleaseID": "24H2",
+  "OSEdition": "Pro",
+  "OSEditionValues": ["Pro", "Education", "Enterprise"],
+  "OSLanguage": "en-au",
+  "OSActivation": "Retail",
+  "ClearDiskConfirm": true
+}

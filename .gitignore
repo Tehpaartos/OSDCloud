@@ -1,0 +1,25 @@
+# Large binary build artifacts - never commit these
+*.wim
+*.esd
+*.cab
+*.iso
+
+# OSDCloud workspace build artifacts
+/BootImage/WinRE/
+/BootImage/Media/
+/BootImage/Temp/
+
+# Driver packages
+/Drivers/DriverPacks/
+/Drivers/Downloaded/
+
+# PowerShell module cache
+/Modules/
+
+# Log files
+*.log
+/Logs/
+
+# Sensitive deployment config - never commit these
+AutopilotConfigurationFile.json
+*unattend*password*
