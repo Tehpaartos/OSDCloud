@@ -74,7 +74,7 @@ This step takes 10–20 minutes. **Run it only once** - it does not need to be r
 .\BootImage\New-OSDCloudISO.ps1
 ```
 
-This produces `C:\OSDCloud\ISO\OSDCloud-v1.0.0.iso` (and a NoPrompt variant).
+This produces `C:\OSDCloud\ISO\OSDCloud-v1.0.0.iso`.
 
 Note the SHA256 hash output - keep it for verification.
 
