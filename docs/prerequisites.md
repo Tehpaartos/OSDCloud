@@ -35,11 +35,6 @@ Windows 11 WinRE is not compatible with older hardware. If you build the image o
 - Download both **adksetup.exe** and **adkwinpesetup.exe** from that entry
 - Run **adksetup.exe** and select **Deployment Tools** only
 - Run **adkwinpesetup.exe** and select **Windows Preinstallation Environment**
-- CLI install (shows progress bar):
-  ```
-  adksetup.exe /features OptionId.DeploymentTools /passive /norestart
-  adkwinpesetup.exe /features OptionId.WindowsPreinstallationEnvironment /passive /norestart
-  ```
 
 ### 3. OSD PowerShell Module
 

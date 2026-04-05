@@ -295,7 +295,6 @@ if (-not $adkOk) {
     Write-Host '     https://learn.microsoft.com/en-us/windows-hardware/get-started/adk-install' -ForegroundColor Cyan
     Write-Host '  2. Under "Other ADK downloads" select Windows 10, version 2004' -ForegroundColor White
     Write-Host '  3. Download adksetup.exe and run it - select Deployment Tools only' -ForegroundColor White
-    Write-Host '     .\adksetup.exe /features OptionId.DeploymentTools /passive /norestart' -ForegroundColor Gray
     Write-Host ''
     Write-Status 'Re-run this script after installing.' -Status 'WARN'
     Write-Log 'ADK not installed - prompted user'
@@ -314,7 +313,6 @@ if ($adkOk -and -not $adkVersionMatch) {
     Write-Host '     https://learn.microsoft.com/en-us/windows-hardware/get-started/adk-install' -ForegroundColor Cyan
     Write-Host '  3. Under "Other ADK downloads" select Windows 10, version 2004' -ForegroundColor White
     Write-Host '  4. Download adksetup.exe and run it - select Deployment Tools only' -ForegroundColor White
-    Write-Host '     .\adksetup.exe /features OptionId.DeploymentTools /passive /norestart' -ForegroundColor Gray
     Write-Host ''
     Write-Status 'Re-run this script after reinstalling.' -Status 'WARN'
     Write-Log 'ADK version mismatch - prompted user'
@@ -332,7 +330,6 @@ if (-not $winPEOk) {
     Write-Host '     https://learn.microsoft.com/en-us/windows-hardware/get-started/adk-install' -ForegroundColor Cyan
     Write-Host '  2. Under "Other ADK downloads" select Windows 10, version 2004' -ForegroundColor White
     Write-Host '  3. Download adkwinpesetup.exe and run it - select Windows Preinstallation Environment' -ForegroundColor White
-    Write-Host '     .\adkwinpesetup.exe /features OptionId.WindowsPreinstallationEnvironment /passive /norestart' -ForegroundColor Gray
     Write-Host ''
     Write-Status 'Re-run this script after installing.' -Status 'WARN'
     Write-Log 'WinPE add-on not installed - prompted user'
