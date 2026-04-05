@@ -173,57 +173,65 @@ if ($staleMounts) {
 }
 
 # ---------------------------------------------------------------------------
+# Steps 1-3 run under Windows PowerShell 5.1
+# New-OSDCloudTemplate, New-OSDCloudWorkspace, and Edit-OSDCloudWinPE all
+# use DISM COM components that fail under PowerShell 7 ("Class not registered").
+# ---------------------------------------------------------------------------
+$ps5 = "$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe"
+if (-not (Test-Path $ps5)) {
+    Write-Status 'Windows PowerShell 5.1 not found - cannot continue.' -Status 'ERROR'
+    exit 1
+}
+
+$dismScript = @"
+Import-Module OSDCloud -Force -ErrorAction Stop
+
 # Step 1 - Create OSDCloud Template (WinRE)
-# ---------------------------------------------------------------------------
-Write-Status "Creating OSDCloud template '$TemplateName' from WinRE..." -Status 'INFO'
-Write-Log "Creating template: $TemplateName"
+Write-Host '[INFO] Creating OSDCloud template from WinRE...' -ForegroundColor Cyan
+New-OSDCloudTemplate -WinRE -Name '$TemplateName' -Verbose
+if (`$LASTEXITCODE -and `$LASTEXITCODE -ne 0) { exit 1 }
 
-try {
-    New-OSDCloudTemplate -WinRE -Name $TemplateName -Verbose
-    Write-Status "Template '$TemplateName' created." -Status 'OK'
-    Write-Log "Template created: $TemplateName"
-} catch {
-    Write-Status "Failed to create OSDCloud template: $_" -Status 'ERROR'
-    Write-Log "ERROR creating template: $_"
-    exit 1
-}
-
-# ---------------------------------------------------------------------------
 # Step 2 - Create OSDCloud Workspace
-# ---------------------------------------------------------------------------
-Write-Status "Creating workspace at: $WorkspacePath" -Status 'INFO'
-Write-Log "Creating workspace: $WorkspacePath"
+Write-Host '[INFO] Creating workspace at: $WorkspacePath' -ForegroundColor Cyan
+New-OSDCloudWorkspace -WorkspacePath '$WorkspacePath' -Verbose
+if (`$LASTEXITCODE -and `$LASTEXITCODE -ne 0) { exit 2 }
 
-try {
-    New-OSDCloudWorkspace -WorkspacePath $WorkspacePath -Verbose
-    Write-Status "Workspace created at: $WorkspacePath" -Status 'OK'
-    Write-Log "Workspace created: $WorkspacePath"
-} catch {
-    Write-Status "Failed to create workspace: $_" -Status 'ERROR'
-    Write-Log "ERROR creating workspace: $_"
-    exit 1
-}
+# Step 3 - Inject WiFi drivers and stamp deploy URL
+Write-Host '[INFO] Injecting WiFi drivers and stamping deployment URL...' -ForegroundColor Cyan
+Edit-OSDCloudWinPE -WorkspacePath '$WorkspacePath' -StartURL '$DeployURL' -CloudDriver WiFi -Verbose
+if (`$LASTEXITCODE -and `$LASTEXITCODE -ne 0) { exit 3 }
+"@
 
-# ---------------------------------------------------------------------------
-# Step 3 - Inject WiFi Drivers and Stamp Deploy URL
-# -CloudDriver WiFi injects Intel WiFi drivers.
-# -StartURL stamps the deployment script URL into Startnet.cmd.
-# Both are handled in a single Edit-OSDCloudWinPE call.
-# ---------------------------------------------------------------------------
-Write-Status 'Injecting WiFi drivers and stamping deployment URL...' -Status 'INFO'
-Write-Log "Stamping URL: $DeployURL"
+Write-Status 'Running DISM operations under Windows PowerShell 5.1...' -Status 'INFO'
+Write-Log 'Launching PS5.1 for DISM steps'
 
-try {
-    Edit-OSDCloudWinPE -WorkspacePath $WorkspacePath `
-                       -StartURL $DeployURL `
-                       -CloudDriver WiFi `
-                       -Verbose
-    Write-Status 'WiFi drivers injected and deployment URL stamped.' -Status 'OK'
-    Write-Log 'Edit-OSDCloudWinPE completed successfully'
-} catch {
-    Write-Status "Failed to configure WinPE: $_" -Status 'ERROR'
-    Write-Log "ERROR in Edit-OSDCloudWinPE: $_"
-    exit 1
+& $ps5 -NonInteractive -ExecutionPolicy Bypass -Command $dismScript
+
+switch ($LASTEXITCODE) {
+    0 {
+        Write-Status 'Template created, workspace built, and deployment URL stamped.' -Status 'OK'
+        Write-Log 'PS5.1 DISM steps completed successfully'
+    }
+    1 {
+        Write-Status 'Failed to create OSDCloud template (Step 1).' -Status 'ERROR'
+        Write-Log 'ERROR: Step 1 failed in PS5.1'
+        exit 1
+    }
+    2 {
+        Write-Status 'Failed to create OSDCloud workspace (Step 2).' -Status 'ERROR'
+        Write-Log 'ERROR: Step 2 failed in PS5.1'
+        exit 1
+    }
+    3 {
+        Write-Status 'Failed to configure WinPE - WiFi drivers or deploy URL (Step 3).' -Status 'ERROR'
+        Write-Log 'ERROR: Step 3 failed in PS5.1'
+        exit 1
+    }
+    default {
+        Write-Status "Unexpected exit code from PS5.1: $LASTEXITCODE" -Status 'ERROR'
+        Write-Log "ERROR: Unexpected PS5.1 exit code: $LASTEXITCODE"
+        exit 1
+    }
 }
 
 # ---------------------------------------------------------------------------
