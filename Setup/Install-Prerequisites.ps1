@@ -301,11 +301,14 @@ if (-not $adkOk -or -not $winPEOk) {
         Write-Status 'Windows PE Add-on is not installed.' -Status 'WARN'
     }
     Write-Host ''
-    Write-Host '  Step 1 - Download and install the ADK (select Deployment Tools only):' -ForegroundColor White
-    Write-Host '  https://go.microsoft.com/fwlink/?linkid=2289980' -ForegroundColor Cyan
+    Write-Host '  Download page (select "Windows 10, version 2004" from the Other ADK downloads section):' -ForegroundColor White
+    Write-Host '  https://learn.microsoft.com/en-us/windows-hardware/get-started/adk-install' -ForegroundColor Cyan
     Write-Host ''
-    Write-Host '  Step 2 - Download and install the WinPE Add-on (separate installer):' -ForegroundColor White
-    Write-Host '  https://go.microsoft.com/fwlink/?linkid=2289981' -ForegroundColor Cyan
+    Write-Host '  Step 1 - Run adksetup.exe, select Deployment Tools only' -ForegroundColor White
+    Write-Host '  CLI: adksetup.exe /features OptionId.DeploymentTools /passive /norestart' -ForegroundColor Gray
+    Write-Host ''
+    Write-Host '  Step 2 - Run adkwinpesetup.exe, select Windows Preinstallation Environment' -ForegroundColor White
+    Write-Host '  CLI: adkwinpesetup.exe /features OptionId.WindowsPreinstallationEnvironment /passive /norestart' -ForegroundColor Gray
     Write-Host ''
     Write-Status 'Re-run this script after installing both.' -Status 'WARN'
     Write-Log "ADK installed=$adkOk WinPE installed=$winPEOk - prompted user"
@@ -319,10 +322,10 @@ if ($adkOk -and -not $adkVersionMatch) {
     Write-Host '  Required version: Windows ADK for Windows 10, version 2004 (build 19041)' -ForegroundColor White
     Write-Host ''
     Write-Host '  1. Uninstall the current ADK and WinPE Add-on from Apps & Features' -ForegroundColor White
-    Write-Host '  2. Download ADK for Windows 10, version 2004:' -ForegroundColor White
-    Write-Host '     https://go.microsoft.com/fwlink/?linkid=2289980' -ForegroundColor Cyan
-    Write-Host '  3. Download WinPE Add-on for Windows 10, version 2004:' -ForegroundColor White
-    Write-Host '     https://go.microsoft.com/fwlink/?linkid=2289981' -ForegroundColor Cyan
+    Write-Host '  2. Go to the ADK download page and select "Windows 10, version 2004":' -ForegroundColor White
+    Write-Host '     https://learn.microsoft.com/en-us/windows-hardware/get-started/adk-install' -ForegroundColor Cyan
+    Write-Host '     ADK CLI:   adksetup.exe /features OptionId.DeploymentTools /passive /norestart' -ForegroundColor Gray
+    Write-Host '     WinPE CLI: adkwinpesetup.exe /features OptionId.WindowsPreinstallationEnvironment /passive /norestart' -ForegroundColor Gray
     Write-Host '  4. Re-run this script after reinstalling both.' -ForegroundColor White
     Write-Host ''
     Write-Log 'ADK version mismatch detected - prompted user'

@@ -142,7 +142,7 @@ Rebuild the boot image with the correct URL.
 **Fix:** Install the **ADK for Windows 10, version 2004** — this is the correct ADK for Windows 10 22H2 build machines. Microsoft does not publish a separate ADK per Windows 10 release after 2004; the 2004 ADK supports all Windows 10 builds from 19041 through 19045.
 
 1. Uninstall the existing ADK and WinPE add-on from Apps & Features
-2. Download and install:
-   - ADK: https://go.microsoft.com/fwlink/?linkid=2289980
-   - WinPE add-on: https://go.microsoft.com/fwlink/?linkid=2289981
+2. Go to the ADK download page and select **Windows 10, version 2004** from "Other ADK downloads":
+   `https://learn.microsoft.com/en-us/windows-hardware/get-started/adk-install`
+   Download and install both **adksetup.exe** (Deployment Tools) and **adkwinpesetup.exe** (Windows Preinstallation Environment)
 3. Run `Setup/Verify-Environment.ps1` — ADK Version Match should show PASS

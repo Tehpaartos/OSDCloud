@@ -30,14 +30,15 @@ Windows 11 WinRE is not compatible with older hardware. If you build the image o
 
 > This is the correct ADK for Windows 10 22H2. Microsoft does not publish a separate ADK for each Windows 10 release after 2004 — the version 2004 ADK supports all Windows 10 versions from 2004 through 22H2.
 
-- Download **ADK**: https://go.microsoft.com/fwlink/?linkid=2289980
-- Download **WinPE add-on** (separate installer, required): https://go.microsoft.com/fwlink/?linkid=2289981
-- Run the ADK installer and select **only** the **Deployment Tools** feature
-- Run the WinPE add-on installer and select **Windows Preinstallation Environment**
-- Silent install:
+- Go to the ADK download page and select **Windows 10, version 2004** from the "Other ADK downloads" section:
+  `https://learn.microsoft.com/en-us/windows-hardware/get-started/adk-install`
+- Download both **adksetup.exe** and **adkwinpesetup.exe** from that entry
+- Run **adksetup.exe** and select **Deployment Tools** only
+- Run **adkwinpesetup.exe** and select **Windows Preinstallation Environment**
+- CLI install (shows progress bar):
   ```
-  adksetup.exe /features OptionId.DeploymentTools /quiet /norestart
-  adkwinpesetup.exe /features OptionId.WindowsPreinstallationEnvironment /quiet /norestart
+  adksetup.exe /features OptionId.DeploymentTools /passive /norestart
+  adkwinpesetup.exe /features OptionId.WindowsPreinstallationEnvironment /passive /norestart
   ```
 
 ### 3. OSD PowerShell Module
